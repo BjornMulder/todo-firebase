@@ -152,5 +152,4 @@ class Todo {
     })
   }
 }
-
-  var todo = new Todo()
+var todo = new Todo()
