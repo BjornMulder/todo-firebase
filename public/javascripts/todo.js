@@ -1,6 +1,7 @@
 class Todo {
   constructor() {
     this.user = JSON.parse(this.readCookie("user"))
+    //console.log(this.user)
     this.config = {
       apiKey: "AIzaSyDGKJw14c9jiBvkUhqM0mFxwPquyGzwLog",
       authDomain: "todo-ce199.firebaseapp.com",
@@ -10,6 +11,8 @@ class Todo {
     }
     firebase.initializeApp(this.config)
     this.database = firebase.database()
+
+    this.fetchTodoItems();
   }
   readCookie(name) {
     var nameEQ = name + "="
@@ -23,8 +26,8 @@ class Todo {
   }
   genItem(header, body, todoID){
     let item = ''
-    item += '<div class=\'item\' id=\'item-'
-    item += todo.itemCounter
+    item += '<div class=\'item\' id=\''
+    item += todoID.replace('todoItem = ', '')
     item += '\'>'
     item += '<div class=\'itemHeader\'>'
     item += '<h3>'
@@ -37,8 +40,8 @@ class Todo {
     item += '</p>'
     item += '</div>'
     item += '<div class=\'itemActions text-center\'>'
-    item += '<button class=\'btn btn-danger\' onclick=\'todo.deleteItem(this)\'>delete</button>'
-    item += '<button  onclick=\'todo.getItemData(this)\' class=\'btn btn-primary\'>edit</button>'
+    item += '<button class=\'btn btn-danger\' onclick=\'todo.deleteTodo(this)\' data-todo-id=\'' + todoID + '\'>delete</button>'
+    item += '<button  onclick=\'todo.fillModal(this)\' class=\'btn btn-primary\' data-todo-id=\'' + todoID + '\'>edit</button>'
     item += '<input type="hidden" name="todoID" id="todoID" value="'+ todoID + '">'
     item += '</div>'
     item += '</div>'
@@ -61,8 +64,7 @@ class Todo {
     })
   }
   fetchTodoItems(){
-    var userId = firebase.auth().currentUser.uid
-    return firebase.database().ref('/lists/' + todo.user.uid).once('value').then(function(snapshot) {
+    return firebase.database().ref('/lists/' + this.user.uid).once('value').then(function(snapshot) {
       var items = snapshot.val()
       let allItems = {};
       for (var key in items) {
@@ -102,6 +104,44 @@ class Todo {
     todo.genItem(header, body, todoID)
     $('#createModal').modal('hide')
   }
+  updateTodo(){
+    let header  = $('#editHeader').val()
+    let body    = $('#editContent').val()
+    let todoID  = $('#hiddenField').val()
+    console.log(todoID);
+
+    firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({
+      username: todo.user.email,
+      todoItem: todoID,
+      todoHeader: header,
+      todoBody: body
+    })
+    $('#editModal').modal('hide')
+
+    let el = $('#' + todoID).remove()
+
+    todo.fetchTodoItems()
+
+  }
+  deleteTodo(el){
+  let todoID = el.getAttribute('data-todo-id').replace('todoItem = ', '')
+    console.log(todoID)
+    firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({}).then(() => {console.log("deleted")})
+    el.parentNode.parentNode.parentElement.removeChild(el.parentNode.parentNode);
+  }
+  fillModal(el){
+    let todoID = el.getAttribute('data-todo-id').replace('todoItem = ', '')
+    return firebase.database().ref('/lists/' + todo.user.uid + '/' + todoID).once('value').then(function(snapshot) {
+      let item = snapshot.val();
+      $('#editHeader').val(item.todoHeader)
+      $('#editContent').val(item.todoBody)
+      $('#hiddenField').val(item.todoItem)
+      $('#editModal').modal('show')
+    })
+  }
 }
-var todo = new Todo()
+
+$( document ).ready(function(){
+  var todo = new Todo()
+})
 
