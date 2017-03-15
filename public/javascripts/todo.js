@@ -13,6 +13,7 @@ class Todo {
     this.database = firebase.database()
 
     this.fetchTodoItems();
+    this.watchFirebase();
   }
   readCookie(name) {
     var nameEQ = name + "="
@@ -49,6 +50,17 @@ class Todo {
     // append item to list
     $('#list').append(item)
   }
+  watchFirebase(){
+    firebase.database().ref('/lists/' + this.user.uid).on('child_added', (snapshot) => {
+      todo.fetchTodoItems();
+    })
+    firebase.database().ref('/lists/' + this.user.uid).on('child_changed', (snapshot) => {
+      todo.fetchTodoItems();
+    })
+    firebase.database().ref('/lists/' + this.user.uid).on('child_removed', (snapshot) => {
+      todo.fetchTodoItems();
+    })
+  }
   writeUserData(header, body, todoID) {
     firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({
       username: todo.user.email,
@@ -83,6 +95,7 @@ class Todo {
         }
           allItems[item[2].replace('todoItem = ', '')] = item
       }
+      $('#list').html('');
       for (var prop in allItems) {
         if (allItems.hasOwnProperty(prop)) {
           // do stuff
@@ -120,7 +133,6 @@ class Todo {
 
     let el = $('#' + todoID).remove()
 
-    todo.fetchTodoItems()
 
   }
   deleteTodo(el){
@@ -141,7 +153,4 @@ class Todo {
   }
 }
 
-$( document ).ready(function(){
   var todo = new Todo()
-})
-

@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="/stylesheets/createModal.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-    <script src="/javascripts/todo.js" type="text/javascript" charset="utf-8"></script>
 
     <script   src="https://code.jquery.com/jquery-3.0.0.js"   integrity="sha256-jrPLZ+8vDxt2FnE1zvZXCkCcebI/C8Dt5xyaQBjxQIo="   crossorigin="anonymous"></script>
     <script   src="https://code.jquery.com/jquery-2.2.4.js"   integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="   crossorigin="anonymous"></script>
@@ -94,7 +93,7 @@
               <div class="modal-footer">
                 <div class="btn-group btn-group-justified" role="group" aria-label="group button">
                   <div class="btn-group" role="group">
-                    <button type="button" id="saveImage" class="btn btn-default btn-hover-green" onclick="todo.fillModal(this);"role="button">Save</button>
+                    <button type="button" id="saveImage" class="btn btn-default btn-hover-green" onclick="todo.updateTodo(this);"role="button">Save</button>
                   </div>
                 </div>
               </div>
@@ -107,6 +106,7 @@
         <p>&copy; Bjorn Mulder, june 2016</p>
       </div>
     </div><!--container-->
+    <script src="/javascripts/todo.js" type="text/javascript" charset="utf-8"></script>
   </body>
 </html>
 
