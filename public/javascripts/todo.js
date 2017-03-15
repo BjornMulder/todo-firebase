@@ -64,9 +64,32 @@ class Todo {
     var userId = firebase.auth().currentUser.uid
     return firebase.database().ref('/lists/' + todo.user.uid).once('value').then(function(snapshot) {
       var items = snapshot.val()
-      console.log(items);
-      for (var i = 0, len = items.length; i < len; i++) {
-        console.log(items[i])
+      let allItems = {};
+      for (var key in items) {
+        // skip loop if the property is from prototype
+        if (!items.hasOwnProperty(key)) continue;
+
+        var obj = items[key];
+        let item = []
+        for (var prop in obj) {
+          // skip loop if the property is from prototype
+          if(!obj.hasOwnProperty(prop)) continue;
+
+          // your code
+          // figure out how to do this cleanly
+          item.push(prop + " = " + obj[prop])
+        }
+          allItems[item[2].replace('todoItem = ', '')] = item
+      }
+      for (var prop in allItems) {
+        if (allItems.hasOwnProperty(prop)) {
+          // do stuff
+          let item = allItems[prop]
+          let itemBody    = item[0].replace('todoBody = ', '')
+          let itemHeader  = item[1].replace('todoHeader = ', '')
+          let itemID      = item[2].replace('todoID = ', '')
+          todo.genItem(itemHeader, itemBody, itemID) 
+        }
       }
     })
   }
