@@ -1,29 +1,7 @@
 class Todo {
   constructor() {
-    this.user = JSON.parse(this.readCookie("user"))
-    //console.log(this.user)
-    this.config = {
-      apiKey: "AIzaSyDGKJw14c9jiBvkUhqM0mFxwPquyGzwLog",
-      authDomain: "todo-ce199.firebaseapp.com",
-      databaseURL: "https://todo-ce199.firebaseio.com",
-      storageBucket: "todo-ce199.appspot.com",
-      messagingSenderId: "1093069006026"
-    }
-    firebase.initializeApp(this.config)
-    this.database = firebase.database()
-
     this.fetchTodoItems();
     this.watchFirebase();
-  }
-  readCookie(name) {
-    var nameEQ = name + "="
-    var ca = document.cookie.split(';')
-    for(var i=0;i < ca.length;i++) {
-      var c = ca[i];
-      while (c.charAt(0)==' ') c = c.substring(1,c.length)
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length)
-    }
-    return null
   }
   genItem(header, body, todoID){
     let item = ''
@@ -51,32 +29,25 @@ class Todo {
     $('#list').append(item)
   }
   watchFirebase(){
-    firebase.database().ref('/lists/' + this.user.uid).on('child_added', (snapshot) => {
+    firebaseAPI.database.ref('/lists/' + userhandler.user.uid).on('child_added', (snapshot) => {
       todo.fetchTodoItems();
     })
-    firebase.database().ref('/lists/' + this.user.uid).on('child_changed', (snapshot) => {
+    firebaseAPI.database.ref('/lists/' + userhandler.user.uid).on('child_changed', (snapshot) => {
       todo.fetchTodoItems();
     })
-    firebase.database().ref('/lists/' + this.user.uid).on('child_removed', (snapshot) => {
+    firebaseAPI.database.ref('/lists/' + userhandler.user.uid).on('child_removed', (snapshot) => {
       todo.fetchTodoItems();
     })
   }
-  writeUserData(header, body, todoID) {
-    firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({
-      username: todo.user.email,
+  saveTodo(header, body, todoID) {
+    firebaseAPI.database.ref('lists/' + userhandler.user.uid + '/todo-items/' + todoID).set({
       todoItem: todoID,
       todoHeader: header,
       todoBody: body
     })
   }
-  getUserData(){
-    var userId = firebase.auth().currentUser.uid
-    return firebase.database().ref('/lists/' + todo.user.uid).once('value').then(function(snapshot) {
-      var displayname = snapshot.val().username
-    })
-  }
   fetchTodoItems(){
-    return firebase.database().ref('/lists/' + this.user.uid).once('value').then(function(snapshot) {
+    return firebaseAPI.database.ref('/lists/' + userhandler.user.uid).once('value').then(function(snapshot) {
       var items = snapshot.val()
       let allItems = {};
       for (var key in items) {
@@ -100,6 +71,7 @@ class Todo {
         if (allItems.hasOwnProperty(prop)) {
           // do stuff
           let item = allItems[prop]
+          console.log(item)
           let itemBody    = item[0].replace('todoBody = ', '')
           let itemHeader  = item[1].replace('todoHeader = ', '')
           let itemID      = item[2].replace('todoID = ', '')
@@ -113,7 +85,7 @@ class Todo {
     let header  = $('#createHeader').val()
     let body    = $('#createContent').val()
     let todoID  = "todo-" + Math.random().toString(36).substr(2, 9)
-    todo.writeUserData(header, body, todoID)
+    todo.saveTodo(header, body, todoID)
     todo.genItem(header, body, todoID)
     $('#createModal').modal('hide')
   }
@@ -121,10 +93,8 @@ class Todo {
     let header  = $('#editHeader').val()
     let body    = $('#editContent').val()
     let todoID  = $('#hiddenField').val()
-    console.log(todoID);
 
-    firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({
-      username: todo.user.email,
+    firebaseAPI.database.ref('lists/' + userhandler.user.uid + '/' + todoID).set({
       todoItem: todoID,
       todoHeader: header,
       todoBody: body
@@ -137,13 +107,12 @@ class Todo {
   }
   deleteTodo(el){
   let todoID = el.getAttribute('data-todo-id').replace('todoItem = ', '')
-    console.log(todoID)
-    firebase.database().ref('lists/' + todo.user.uid + '/' + todoID).set({}).then(() => {console.log("deleted")})
+    firebaseAPI.database.ref('lists/' + userhandler.user.uid + '/' + todoID).set({}).then(() => {console.log("deleted")})
     el.parentNode.parentNode.parentElement.removeChild(el.parentNode.parentNode);
   }
   fillModal(el){
     let todoID = el.getAttribute('data-todo-id').replace('todoItem = ', '')
-    return firebase.database().ref('/lists/' + todo.user.uid + '/' + todoID).once('value').then(function(snapshot) {
+    return firebaseAPI.database.ref('/lists/' + userhandler.user.uid + '/' + todoID).once('value').then(function(snapshot) {
       let item = snapshot.val();
       $('#editHeader').val(item.todoHeader)
       $('#editContent').val(item.todoBody)
